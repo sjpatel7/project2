@@ -8,28 +8,16 @@
 #include <algorithm>
 using namespace std;
 
-const int size = 3;
+const int size = 20;
 int config[size][size];
-double fiveSteps[10000];
-double fiftySteps[10000];
-double fivehSteps[10000];
 
 double kb = 1.38064852 * pow(10, -23);
 // this function randomly samples spin configurations with a transition probability
 //argument d is the dimension of the of configuration
-double MHsample(double temp, int sample) {
-	srand((unsigned)time(0));
-	int spin[2] = { -1,1 };
-	//come back to the dimensions of config when I figure out how to make variable size for array
-	//this loop initializes the configuration with spins of -1 or 1
-	for (int i = 0; i < size; i++) {
-		for (int j = 0; j < size; j++) {
-			config[i][j] = spin[1];
-			//config[i][j] = spin[rand() % 2];
-		}
-	}
+double MHsample(double temp) {
+
 	//this outer loop applies transitions to the configuration
-	for (int trans = 0; trans < 500; trans++) {
+	for (int trans = 0; trans < 10000; trans++) {
 		int randrow = rand() % size;
 		int randcol = rand() % size;
 		double energy_Change = 0;
@@ -61,27 +49,6 @@ double MHsample(double temp, int sample) {
 		if (randNum < prob) {
 			config[randrow][randcol] = -config[randrow][randcol];
 		}
-		if ( trans==4 || trans==49 || trans==499) {
-			//this builds a 9 bit binary number in configNum. the highest bit represents spin for top left spin.
-			int configNum = 0;
-			for (int i = 0; i < size; i++) {
-				for (int j = 0; j < size; j++) {
-					if (config[i][j] == -1) {
-						;
-					} else {
-						configNum += (1 << (size * i + j));
-					}
-				}
-			}
-			if (trans == 4) {
-				fiveSteps[sample] = configNum;
-			} else if(trans == 49) {
-				fiftySteps[sample] = configNum;
-			} else if(trans == 499) {
-				fivehSteps[sample] = configNum;
-			}
-		}
-
 	}
 	double M = 0;
 	for (int i = 0; i < size; i++) {
@@ -106,32 +73,19 @@ int main()
 		}
 	}
 	//change temp to whatever value for samples
-	double temp = 1000 ;
-	double magsquare_array[10000];
+	double temp = 2;
+	double magsquare_array[100];
 	double total = 0;
-	for (int sample = 0; sample < 10000; sample++) {
-		magsquare_array[sample] = MHsample(temp, sample);
+	for (int sample = 0; sample < 100; sample++) {
+		magsquare_array[sample] = MHsample(temp);
 		total += magsquare_array[sample];
 	}
+//	ofstream myfile("stats.txt");
+//	for (int i = 0; i < 100; i++) {
+//		myfile << magsquare_array[i] << endl;
+//	}
 
-	ofstream myfile("C:/Users/Shawn/source/repos/Project0c++/Project0c++/probdist5.txt");
-	for (int i = 0; i < 10000; i++) {
-		myfile << fiveSteps[i] << endl;
-	}
-	ofstream MYfile("C:/Users/Shawn/source/repos/Project0c++/Project0c++/probdist50.txt");
-	for (int i = 0; i < 10000; i++) {
-		MYfile << fiftySteps[i] << endl;
-	}
-	ofstream Myfile("C:/Users/Shawn/source/repos/Project0c++/Project0c++/probdist500.txt");
-	for (int i = 0; i < 10000; i++) {
-		Myfile << fivehSteps[i] << endl;
-	}
-	ofstream File("C:/Users/Shawn/source/repos/Project0c++/Project0c++/stats1.txt");
-	for (int i = 0; i < 100; i++) {
-		File << magsquare_array[i] << endl;
-	}
-	double mag_ave = total / 10000;
+	double mag_ave = total / 100;
 	cout << mag_ave;
 	return 0;
 }
-
